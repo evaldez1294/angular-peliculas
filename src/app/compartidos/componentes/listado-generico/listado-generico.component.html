@@ -1,0 +1,22 @@
+@if (!listado) {
+    <div #cargando>
+        <ng-content select="[cargando]"></ng-content>
+    </div>
+    @if(!cargando.innerHTML.trim()){
+        <div>
+            <img src="loading.gif" />
+        </div>
+    }
+} @else if (listado.length === 0) {
+    <div #sinResultados>
+        <ng-content select="[sinResultados]"></ng-content>
+    </div>
+
+    @if(!sinResultados.innerHTML.trim()){
+        <div>
+            <p>No se encontraron resultados.</p>
+        </div>
+    }
+} @else {
+  <ng-content select="[contenido]"></ng-content>
+}
