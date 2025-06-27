@@ -1,0 +1,49 @@
+name: Auto PR and Merge from project to main
+
+on:
+  push:
+    branches:
+      - project
+
+jobs:
+  validate-create-merge-pr:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run Lint
+        run: npm run lint
+
+      - name: Run Tests
+        run: npm test -- --watch=false --browsers=ChromeHeadless
+
+      - name: Create Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "Auto PR: project → main"
+          title: "🔁 Auto PR: Sync project → main"
+          body: |
+            Este PR fue creado automáticamente tras pasar lint y tests.
+          base: main
+          branch: project
+          delete-branch: false
+
+      - name: Enable auto-merge
+        if: steps.cpr.outputs.pull-request-number != ''
+        uses: peter-evans/enable-pull-request-automerge@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
+          merge-method: merge
